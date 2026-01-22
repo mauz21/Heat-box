@@ -8,7 +8,9 @@ import {
   orders,
   reservations,
   locations,
-  loyaltyAccounts
+  loyaltyAccounts,
+  blogPosts,
+  festiveDeals
 } from './schema';
 
 export const errorSchemas = {
@@ -111,6 +113,32 @@ export const api = {
       responses: {
         200: z.custom<typeof loyaltyAccounts.$inferSelect>(),
         401: errorSchemas.notFound, // Use 401 for unauth
+      },
+    },
+  },
+  blog: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/blog',
+      responses: {
+        200: z.array(z.custom<typeof blogPosts.$inferSelect>()),
+      },
+    },
+    get: {
+      method: 'GET' as const,
+      path: '/api/blog/:slug',
+      responses: {
+        200: z.custom<typeof blogPosts.$inferSelect>(),
+        404: errorSchemas.notFound,
+      },
+    },
+  },
+  festive: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/festive-deals',
+      responses: {
+        200: z.array(z.custom<typeof festiveDeals.$inferSelect>()),
       },
     },
   },

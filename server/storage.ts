@@ -1,11 +1,14 @@
 import { 
   products, orders, orderItems, reservations, locations, loyaltyAccounts,
+  blogPosts, festiveDeals,
   type Product, type InsertProduct,
   type Order, type InsertOrder,
   type OrderItem, type InsertOrderItem,
   type Reservation, type InsertReservation,
   type Location, type InsertLocation,
-  type LoyaltyAccount, type InsertLoyaltyAccount
+  type LoyaltyAccount, type InsertLoyaltyAccount,
+  type BlogPost, type InsertBlogPost,
+  type FestiveDeal, type InsertFestiveDeal
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
@@ -33,6 +36,15 @@ export interface IStorage {
   getLoyaltyAccount(userId: string): Promise<LoyaltyAccount | undefined>;
   createLoyaltyAccount(account: InsertLoyaltyAccount): Promise<LoyaltyAccount>;
   updateLoyaltyPoints(userId: string, points: number): Promise<LoyaltyAccount>;
+
+  // Blog
+  getBlogPosts(): Promise<BlogPost[]>;
+  getBlogPost(slug: string): Promise<BlogPost | undefined>;
+  createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+
+  // Festive
+  getFestiveDeals(): Promise<FestiveDeal[]>;
+  createFestiveDeal(deal: InsertFestiveDeal): Promise<FestiveDeal>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -132,6 +144,31 @@ export class DatabaseStorage implements IStorage {
       .where(eq(loyaltyAccounts.userId, userId))
       .returning();
     return account;
+  }
+
+  // Blog
+  async getBlogPosts(): Promise<BlogPost[]> {
+    return await db.select().from(blogPosts).orderBy(desc(blogPosts.publishedAt));
+  }
+
+  async getBlogPost(slug: string): Promise<BlogPost | undefined> {
+    const [post] = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug));
+    return post;
+  }
+
+  async createBlogPost(insertPost: InsertBlogPost): Promise<BlogPost> {
+    const [post] = await db.insert(blogPosts).values(insertPost).returning();
+    return post;
+  }
+
+  // Festive
+  async getFestiveDeals(): Promise<FestiveDeal[]> {
+    return await db.select().from(festiveDeals).where(eq(festiveDeals.isActive, true));
+  }
+
+  async createFestiveDeal(insertDeal: InsertDeal): Promise<FestiveDeal> {
+    const [deal] = await db.insert(festiveDeals).values(insertDeal).returning();
+    return deal;
   }
 }
 

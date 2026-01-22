@@ -107,6 +107,34 @@ export const loyaltyAccounts = pgTable("loyalty_accounts", {
   joinedAt: timestamp("joined_at").defaultNow(),
 });
 
-export const insertLoyaltyAccountSchema = createInsertSchema(loyaltyAccounts).omit({ id: true, joinedAt: true });
-export type LoyaltyAccount = typeof loyaltyAccounts.$inferSelect;
-export type InsertLoyaltyAccount = z.infer<typeof insertLoyaltyAccountSchema>;
+// BLOG POSTS
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  excerpt: text("excerpt").notNull(),
+  content: text("content").notNull(),
+  author: text("author").notNull(),
+  readTime: text("read_time").notNull(),
+  imageUrl: text("image_url").notNull(),
+  publishedAt: timestamp("published_at").defaultNow(),
+});
+
+export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({ id: true, publishedAt: true });
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+
+// FESTIVE DEALS
+export const festiveDeals = pgTable("festive_deals", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  imageUrl: text("image_url").notNull(),
+  tag: text("tag"), // e.g., "Most Popular", "Best for 2"
+  isActive: boolean("is_active").default(true),
+});
+
+export const insertFestiveDealSchema = createInsertSchema(festiveDeals).omit({ id: true });
+export type FestiveDeal = typeof festiveDeals.$inferSelect;
+export type InsertFestiveDeal = z.infer<typeof insertFestiveDealSchema>;

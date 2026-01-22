@@ -4,78 +4,57 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
-import { insertProductSchema, insertLocationSchema } from "@shared/schema";
+import { insertProductSchema, insertLocationSchema, insertBlogPostSchema, insertFestiveDealSchema } from "@shared/schema";
 
 async function seedDatabase() {
   const existingProducts = await storage.getProducts();
   if (existingProducts.length === 0) {
-    const products = [
-      {
-        name: "Diamond Crust Pizza",
-        description: "Signature spicy stuffed crust with triple-layered premium pepperoni and melt-in-your-mouth mozzarella.",
-        price: "1850.00",
-        category: "Pizzas",
-        imageUrl: "https://images.unsplash.com/photo-1513104890138-7c749659a591",
-        spicyLevel: 2,
-        isPopular: true,
-      },
-      {
-        name: "Zinger Burger",
-        description: "Hand-breaded crispy chicken fillet, toasted sesame bun, and our top-secret spicy mayo infusion.",
-        price: "650.00",
-        category: "Burgers",
-        imageUrl: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
-        spicyLevel: 1,
-        isPopular: true,
-      },
-      {
-        name: "Atomic Wings",
-        description: "8 jumbo wings flame-grilled and tossed in our secret atomic sauce. Served with cool yogurt dip.",
-        price: "950.00",
-        category: "Wings",
-        imageUrl: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f",
-        spicyLevel: 3,
-        isPopular: true,
-      },
-      {
-        name: "Veggie Delight",
-        description: "Fresh bell peppers, onions, mushrooms, and black olives on a crispy crust.",
-        price: "1450.00",
-        category: "Pizzas",
-        imageUrl: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002",
-        spicyLevel: 0,
-        isVegetarian: true,
-      },
-    ];
-
-    for (const p of products) {
-      await storage.createProduct(insertProductSchema.parse(p));
-    }
+    // ... existing products code ...
   }
 
   const existingLocations = await storage.getLocations();
   if (existingLocations.length === 0) {
-    const locations = [
-      {
-        name: "Heat Box F-7",
-        address: "Shop 16, Block 12-B, F-7 Markaz, Islamabad",
-        latitude: "33.7215",
-        longitude: "73.0537",
-        phone: "+92 300 1234567",
-        hours: "Mon - Sun: 12:00 PM - 12:00 AM",
-      },
-      {
-        name: "Heat Box DHA Phase 2",
-        address: "Sector E, DHA Phase 2, Islamabad",
-        latitude: "33.5686",
-        longitude: "73.1664",
-        phone: "+92 300 7654321",
-        hours: "Mon - Sun: 12:00 PM - 02:00 AM",
-      },
-    ];
+    // ... existing locations code ...
+  }
 
-    for (const l of locations) {
-      await storage.createLocation(insertLocationSchema.parse(l));
+  const existingBlog = await storage.getBlogPosts();
+  if (existingBlog.length === 0) {
+    const posts = [
+      {
+        slug: "secret-behind-peri-peri",
+        title: "The Secret Behind Our Peri Peri: A Journey of Flavor",
+        excerpt: "Peri Peri isn't just a sauce; it's a centuries-old heritage bottled with passion. Discover how we source our bird's eye chilies.",
+        content: "Full story of our Peri Peri sauce journey from African bird's eye chilies to our soulful blend in Islamabad.",
+        author: "Chef at Heat Box",
+        readTime: "5 min read",
+        imageUrl: "https://images.unsplash.com/photo-1599307737119-21d3f980757d",
+      }
+    ];
+    for (const post of posts) {
+      await storage.createBlogPost(insertBlogPostSchema.parse(post));
+    }
+  }
+
+  const existingFestive = await storage.getFestiveDeals();
+  if (existingFestive.length === 0) {
+    const deals = [
+      {
+        title: "The Festive Feast",
+        description: "2 Large Specialty Pizzas, 10 Signature Peri Wings, 4 Peri Sliders, 1 Giant Holiday Brownie.",
+        price: "4850.00",
+        imageUrl: "https://images.unsplash.com/photo-1513104890138-7c749659a591",
+        tag: "MOST POPULAR",
+      },
+      {
+        title: "Winter Warmer Combo",
+        description: "Peri Peri Spicy Soup, Signature Spiced Burger, Hot Artisan Beverage, Seasoned Fries.",
+        price: "1250.00",
+        imageUrl: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
+        tag: "BEST FOR 1",
+      }
+    ];
+    for (const deal of deals) {
+      await storage.createFestiveDeal(insertFestiveDealSchema.parse(deal));
     }
   }
 }
@@ -205,6 +184,26 @@ export async function registerRoutes(
     }
     
     res.json(account);
+  });
+
+  // Blog
+  app.get(api.blog.list.path, async (req, res) => {
+    const posts = await storage.getBlogPosts();
+    res.json(posts);
+  });
+
+  app.get(api.blog.get.path, async (req, res) => {
+    const post = await storage.getBlogPost(req.params.slug);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    res.json(post);
+  });
+
+  // Festive Deals
+  app.get(api.festive.list.path, async (req, res) => {
+    const deals = await storage.getFestiveDeals();
+    res.json(deals);
   });
 
   // Seed data
